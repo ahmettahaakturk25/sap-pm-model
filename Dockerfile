@@ -11,7 +11,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Kodları kopyala
 COPY . .
 
-# İnternete açılacak kapı (SAP AI Core 9000 portunu sever)
+# SIHIRLI DOKUNUS: SAP AI Core yetki krizini asmak icin indirme klasorunu degistiriyoruz
+ENV HF_HOME=/tmp/huggingface
+ENV TRANSFORMERS_CACHE=/tmp/huggingface
+RUN mkdir -p /tmp/huggingface && chmod -R 777 /tmp/huggingface
+
+# İnternete açılacak kapı
 EXPOSE 9000
 
 # Sunucuyu başlat
