@@ -8,16 +8,19 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# SİHİRLİ DOKUNUŞ 1: İnternet engelini aşmak için modeli robot hazırlarken indirip imaja gömüyoruz!
+ENV HF_HOME=/app/huggingface_cache
+ENV TRANSFORMERS_CACHE=/app/huggingface_cache
+RUN python -c "from transformers import AutoTokenizer, AutoModel; AutoTokenizer.from_pretrained('dbmdz/bert-base-turkish-cased'); AutoModel.from_pretrained('dbmdz/bert-base-turkish-cased')"
+
 # Kodları kopyala
 COPY . .
 
-# SIHIRLI DOKUNUS: SAP AI Core yetki krizini asmak icin indirme klasorunu degistiriyoruz
-ENV HF_HOME=/tmp/huggingface
-ENV TRANSFORMERS_CACHE=/tmp/huggingface
-RUN mkdir -p /tmp/huggingface && chmod -R 777 /tmp/huggingface
+# SİHİRLİ DOKUNUŞ 2: Klasör izinlerini herkese aç (SAP yetki duvarını aşmak için)
+RUN chmod -R 777 /app
 
 # İnternete açılacak kapı
 EXPOSE 9000
 
-# Sunucuyu başlat
-CMD ["gunicorn", "app:app", "--timeout", "120", "-b", "0.0.0.0:9000"]
+# Sunucuyu başlat (Timeout süresini 120'den 300 saniyeye çıkardık, fişi erken çekmesin)
+CMD ["gunicorn", "app:app", "--timeout", "300", "-b", "0.0.0.0:9000"]
