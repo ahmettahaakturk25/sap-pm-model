@@ -1,26 +1,27 @@
-# Hafif bir Python sürümü kullanıyoruz
+# 1. Python 3.10-slim ile devam ediyoruz
 FROM python:3.10-slim
 
-# Çalışma klasörümüzü belirliyoruz
 WORKDIR /app
 
-# Gereksinimleri kopyala ve kur
+# Önce requirements.txt'yi kopyalıyoruz
 COPY requirements.txt .
+
+# 2. NumPy sürümünü garantiye almak için kurulum sırasında 
+# --no-cache-dir kullandığın için sorun çıkmaz ama requirements.txt'de
+# "numpy<2.0" olduğundan emin olman yeterli.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# SİHİRLİ DOKUNUŞ 1: İnternet engelini aşmak için modeli robot hazırlarken indirip imaja gömüyoruz!
+# Model indirme kısmın gayet başarılı, aynı şekilde kalabilir
 ENV HF_HOME=/app/huggingface_cache
 ENV TRANSFORMERS_CACHE=/app/huggingface_cache
 RUN python -c "from transformers import AutoTokenizer, AutoModel; AutoTokenizer.from_pretrained('dbmdz/bert-base-turkish-cased'); AutoModel.from_pretrained('dbmdz/bert-base-turkish-cased')"
 
-# Kodları kopyala
 COPY . .
 
-# SİHİRLİ DOKUNUŞ 2: Klasör izinlerini herkese aç (SAP yetki duvarını aşmak için)
+# 3. İzinler
 RUN chmod -R 777 /app
 
-# İnternete açılacak kapı
 EXPOSE 9000
 
-# Sunucuyu başlat (Timeout süresini 120'den 300 saniyeye çıkardık, fişi erken çekmesin)
-CMD ["gunicorn", "app:app", "--timeout", "300", "-b", "0.0.0.0:9000"]
+# 4. Gunicorn başlangıcı (Burada ufak bir ekleme yapabiliriz)
+CMD ["gunicorn", "app:app", "--timeout", "300", "--workers", "1", "--bind", "0.0.0.0:9000"]
