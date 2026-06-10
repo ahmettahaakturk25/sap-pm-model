@@ -25,7 +25,7 @@ spec:
         - name: docker-registry-secret
         containers:
         - name: kserve-container
-          image: ahmettahaakturk25/sap-pm-model:latest
+          image: ahmettahaakturk25/sap-pm-model:v1.1.0  # <--- 'latest' yerine versiyon kullan
           ports:
           - containerPort: 9000
             protocol: TCP
